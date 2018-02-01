@@ -337,11 +337,63 @@ def p_istat(p):
     pass
 
 
+def _is_true(x, b):
+    '''check if a 8 bits variable x is equal to 0. it is a 8 bit input OR gate.
+    x == 0: b = 0
+    x != 0: b = 1'''
+    global circuit
+    global gate_num
+
+    _x = _init_tmp_variable(0, 'int')
+    _x = variable_table[_x]['wire_start']
+
+    for i in range(intLength):
+        circuit.append('1 1 ' + str(x + i) + ' ' + str(_x + i) + ' INV')
+        gate_num += 1
+
+    circuit.append('2 1 ' + str(_x) + ' ' +
+                   str(_x + 1) + ' ' + str(b) + ' AND')
+    gate_num += 1
+
+    for i in range(2, intLength):
+        circuit.append('2 1 ' + str(b) + ' ' +
+                       str(_x + i) + ' ' + str(b) + ' AND')
+        gate_num += 1
+
+    circuit.append('1 1 ' + str(b) + ' ' + str(b) + ' INV')
+    gate_num += 1
+
+
 def _pick_1of2(x, y, k, q):
     ''''8 bits Y-shaped selector.
     k == 1: q = x
     k == 0: q = y'''
     global circuit
+    global gate_num
+    _k = _init_tmp_line()
+    circuit.append('1 1 ' + str(k) + ' ' + str(_k) + ' INV')
+    gate_num += 1
+
+    tmp_and_1 = _init_tmp_line()
+    tmp_and_2 = _init_tmp_line()
+    tmp_or_1 = _init_tmp_line()
+    tmp_or_2 = _init_tmp_line()
+
+    for i in range(intLength):
+        circuit.append('2 1 ' + str(x + i) + ' ' + str(k) +
+                       ' ' + str(tmp_and_1) + ' AND')
+        circuit.append('2 1 ' + str(y + i) + ' ' + str(_k) +
+                       ' ' + str(tmp_and_2) + ' AND')
+
+        circuit.append('2 1 ' + str(tmp_and_1) + ' ' +
+                       str(tmp_and_2) + ' ' + str(tmp_or_1) + ' XOR')
+        circuit.append('2 1 ' + str(tmp_and_1) + ' ' +
+                       str(tmp_and_2) + ' ' + str(tmp_or_2) + ' AND')
+
+        circuit.append('2 1 ' + str(tmp_or_1) + ' ' +
+                       str(tmp_or_2) + ' ' + str(q + i) + ' XOR')
+
+        gate_num += 5
 
 
 def p_iword(p):
