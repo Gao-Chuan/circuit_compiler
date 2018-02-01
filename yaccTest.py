@@ -347,6 +347,8 @@ def _is_true(x, b):
     _x = _init_tmp_variable(0, 'int')
     _x = variable_table[_x]['wire_start']
 
+    x = variable_table[x]['wire_start']
+
     for i in range(intLength):
         circuit.append('1 1 ' + str(x + i) + ' ' + str(_x + i) + ' INV')
         gate_num += 1
@@ -399,36 +401,38 @@ def _pick_1of2(x, y, k, q):
 def p_iword(p):
     '''iword : ID ASSIGN expression
             | INT ID'''
-    print('iword')
     global if_expr
+    global circuit
+
     if len(p) == 3:
         _init_variable(p[2], 0, p[1])
     else:
+        k = _init_tmp_line()
+        _is_true(variable_table[if_expr[-1]]['wire_start'], k)
+
         if type(p[3]) == str:
-            variable_table[p[1]]['value'] = variable_table[p[3]]['value']
-            # use 2 INV gate to translate value from 1 int to another
+            if variable_table[if_expr[-1]][value]:
+                variable_table[p[1]]['value'] = variable_table[p[3]]['value']
+
+            new_value = _init_tmp_variable(0, 'int')
+            new_value = variable_table[new_value]['wire_start']
+            old_value = variable_table[p[1]]['wire_start']
+
+            p3 = variable_table[p[3]]['wire_start']
+            # move p[3] to new value
             for i in range(intLength):
-                circuit_line = '1 1 '
-                circuit_line += str(variable_table[p[3]]
-                                    ['wire_start'] + i) + ' '
-                circuit_line += str(variable_table[p[1]]
-                                    ['wire_start'] + i) + ' '
-                circuit_line += 'INV'
-                circuit.append(circuit_line)
-
-                circuit_line = '1 1 '
-                circuit_line += str(variable_table[p[1]]
-                                    ['wire_start'] + i) + ' '
-                circuit_line += str(variable_table[p[1]]
-                                    ['wire_start'] + i) + ' '
-                circuit_line += 'INV'
-                circuit.append(circuit_line)
-
+                circuit.append('1 1 ' + str(p3) + ' ' +
+                               str(new_value) + ' INV')
+                circuit.append('1 1 ' + str(new_value) +
+                               ' ' + str(new_value) + ' INV')
                 gate_num += 2
 
+            _pick_1of2(new_value, old_value, k, old_value)
+
         else:
-            variable_table[p[1]]['value'] = p[3]
-            _set_variable(p[1], variable_table[p[1]]['value'])
+            if variable_table[if_expr[-1]][value]:
+                variable_table[p[1]]['value'] = p[3]
+                _set_variable(p[1], variable_table[p[1]]['value'])
 
 
 def p_eblock(p):
