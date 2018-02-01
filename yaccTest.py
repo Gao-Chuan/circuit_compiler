@@ -89,6 +89,7 @@ def _init_tmp_line():
 zero = _init_tmp_line()
 one = _init_tmp_line()
 circuit.append('1 1 ' + str(one) + ' ' + str(one) + ' INV')
+gate_num += 1
 whoKnows = _init_tmp_line()
 
 
@@ -117,12 +118,15 @@ def _set_variable(name, value):
 
 def _full_adder(A, B, Ci_1, Si, Ci):
     global circuit
+    global gate_num
 
     # 3 INV line
     _A, _B, _Ci_1 = _init_tmp_line(), _init_tmp_line(), _init_tmp_line()
     circuit.append('1 1 ' + str(A) + ' ' + str(_A) + ' INV')
     circuit.append('1 1 ' + str(B) + ' ' + str(_B) + ' INV')
     circuit.append('1 1 ' + str(Ci_1) + ' ' + str(_Ci_1) + ' INV')
+
+    gate_num += 3
 
     # 1st 3 input AND gate
     tmp_1 = _init_tmp_line()
@@ -181,6 +185,8 @@ def _full_adder(A, B, Ci_1, Si, Ci):
     circuit.append("2 1 " + str(tmp_1) + ' ' +
                    str(Ci_1) + ' ' + str(and_8) + ' AND')
 
+    gate_num += 16
+
     # Ci output with 4 input or gate
     # or_1
     tmp_1 = _init_tmp_line()
@@ -213,6 +219,8 @@ def _full_adder(A, B, Ci_1, Si, Ci):
     circuit.append('2 1 ' + str(tmp_1) + ' ' +
                    str(tmp_2) + ' ' + str(Ci) + ' XOR')
 
+    gate_num += 9
+
     # Si output with 4 input or gate
     # or_1
     tmp_1 = _init_tmp_line()
@@ -244,6 +252,8 @@ def _full_adder(A, B, Ci_1, Si, Ci):
     or_1 = _init_tmp_line()
     circuit.append('2 1 ' + str(tmp_1) + ' ' +
                    str(tmp_2) + ' ' + str(Si) + ' XOR')
+
+    gate_num += 9
 
 
 def adder_4(A, B, Ci_1, Si, Ci):
@@ -325,6 +335,13 @@ def p_istat(p):
     '''istat : statement_b
              | iword'''
     pass
+
+
+def _pick_1of2(x, y, k, q):
+    ''''8 bits Y-shaped selector.
+    k == 1: q = x
+    k == 0: q = y'''
+    global circuit
 
 
 def p_iword(p):
