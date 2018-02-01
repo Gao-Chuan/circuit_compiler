@@ -99,3 +99,11 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+#ply
+lextab.py
+parser.out
+parsetab.py
+
+#test
+t.py
