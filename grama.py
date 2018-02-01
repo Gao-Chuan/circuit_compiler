@@ -50,4 +50,5 @@ for a error example:
     else
         int b;  <---------- gramma DO NOT support this kind of behavior.
         b = 2;
+if you do something like this, if a != 3, then b will be covered to 0. if a == 3, then b will be 2.
 '''
