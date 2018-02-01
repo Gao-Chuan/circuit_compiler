@@ -32,4 +32,22 @@ expression  :    expression PLUS term
             |    expression XOR term
             |    INV term
             |    term
+term        :    term TIMES factor
+            |   term DIVIDE factor
+            |   factor
+factor      :   NUMBER
+            |   LPAREN expression RPAREN 
+            |   ID
+
+- 1.
+
+Can not declare variables with same name in the hole code.
+for a error example:
+    if a-3
+    then
+        int b;
+        b = 1;
+    else
+        int b;  <---------- gramma DO NOT support this kind of behavior.
+        b = 2;
 '''

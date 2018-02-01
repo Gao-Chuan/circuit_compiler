@@ -403,6 +403,7 @@ def p_iword(p):
             | INT ID'''
     global if_expr
     global circuit
+    global gate_num
 
     if len(p) == 3:
         _init_variable(p[2], 0, p[1])
@@ -438,19 +439,53 @@ def p_iword(p):
 def p_eblock(p):
     '''eblock : estat SEMIC eblock
               | empty'''
-    print('eblock')
+    pass
 
 
 def p_estat(p):
     '''estat : statement_b
              | eword'''
-    print('estat')
+    pass
 
 
 def p_eword(p):
     '''eword : ID ASSIGN expression
             | INT ID'''
-    print('eword')
+    global if_expr
+    global circuit
+    global gate_num
+
+    if len(p) == 3:
+        _init_variable(p[2], 0, p[1])
+    else:
+        k = _init_tmp_line()
+        _is_true(variable_table[if_expr[-1]]['wire_start'], k)
+        circuit.append('1 1 ' + str(k) + ' ' + str(k) + ' INV')
+        gate_num += 1
+
+        if type(p[3]) == str:
+            if variable_table[if_expr[-1]][value]:
+                variable_table[p[1]]['value'] = variable_table[p[3]]['value']
+
+            new_value = _init_tmp_variable(0, 'int')
+            new_value = variable_table[new_value]['wire_start']
+            old_value = variable_table[p[1]]['wire_start']
+
+            p3 = variable_table[p[3]]['wire_start']
+            # move p[3] to new value
+            for i in range(intLength):
+                circuit.append('1 1 ' + str(p3) + ' ' +
+                               str(new_value) + ' INV')
+                circuit.append('1 1 ' + str(new_value) +
+                               ' ' + str(new_value) + ' INV')
+                gate_num += 2
+
+            _pick_1of2(new_value, old_value, k, old_value)
+
+        else:
+            if not variable_table[if_expr[-1]][value]:
+                variable_table[p[1]]['value'] = p[3]
+                _set_variable(p[1], variable_table[p[1]]['value'])
 
 
 def p_word(p):
